@@ -14,12 +14,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 
 # Check C++11 or C++0x support
 include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
    add_definitions(-DCOMPILEDWITHC11)
-   message(STATUS "Using flag -std=c++11.")
+   message(STATUS "Using flag -std=c++14.")
 elseif(COMPILER_SUPPORTS_CXX0X)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
    add_definitions(-DCOMPILEDWITHC0X)
@@ -29,18 +29,33 @@ else()
 endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
-
-# 要保证整个工程的opencv版本一致，包括dbow，源码以及ros相关的
-# 3 4 都可以正常运行
-find_package(OpenCV 3.2)
-   if(NOT OpenCV_FOUND)
-      message(FATAL_ERROR "OpenCV > 3.2 not found.")
-   endif()
+set(OpenCV_DIR "/home/d/opencv-3.4.5/build")
+set(cv_bridge_DIR /home/d/tool/catkin_ws/src/cv_bridge/cmake)#添加指引路径
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        std_msgs
+        sensor_msgs
+        cv_bridge_1
+        #cv_bridge
+        #camera_model
+        message_filters
+        )
+include_directories(
+        ${catkin_INCLUDE_DIRS}
+)
+find_package(OpenCV 3.4.5 QUIET)
+if (NOT OpenCV_FOUND)
+    find_package(OpenCV 2.4.3 QUIET)
+    if (NOT OpenCV_FOUND)
+        message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+    endif ()
+endif ()
 
 MESSAGE("OPENCV VERSION:")
 MESSAGE(${OpenCV_VERSION})
 
-find_package(Eigen3 3.1.0 REQUIRED)
+SET( EIGEN3_INCLUDE_DIR "/usr/local/include/eigen3.3")
+INCLUDE_DIRECTORIES("/usr/local/include/eigen3.3")
 find_package(Pangolin REQUIRED)
 find_package(realsense2)
 
@@ -288,7 +303,9 @@ endif()
 
 # RGB-D inertial examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples_old/RGB-D-Inertial)
-
+add_executable(Planar_inertial_ros 
+                        Examples/RGB-D-Inertial/rgbd_inertial_ros.cc)
+target_link_libraries(Planar_inertial_ros ${PROJECT_NAME} ${catkin_LIBRARIES} )
 if(realsense2_FOUND)
     add_executable(rgbd_inertial_realsense_D435i_old
             Examples_old/RGB-D-Inertial/rgbd_inertial_realsense_D435i.cc)

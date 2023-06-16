@@ -21,11 +21,11 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
-#include <chrono>
+#include <chrono>//C++时间库
 #include <ctime>
 #include <sstream>
 
-#include <condition_variable>
+#include <condition_variable>//C++条件变量库
 
 #include <opencv2/core/core.hpp>
 
